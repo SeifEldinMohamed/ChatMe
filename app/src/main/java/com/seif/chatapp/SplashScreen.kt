@@ -15,23 +15,22 @@ class SplashScreen : AppCompatActivity() {
         txt_inc.alpha = 0f
         val splashDuration = 2000L
         txt_inc.animate().setDuration(splashDuration).alpha(1.5f)
-        overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out)
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         Handler().postDelayed({
             VerifyUserLogging()
-        },splashDuration)
+        }, splashDuration)
 
     }
 
     private fun VerifyUserLogging() {
         val uid = FirebaseAuth.getInstance().currentUser
 
-        if (uid == null){
+        if (uid == null) {
             val intent = Intent(this, Welcome::class.java)
             startActivity(intent)
             finish()
-        }
-        else{
-            val intent = Intent(this,MainActivity::class.java)
+        } else {
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
         }

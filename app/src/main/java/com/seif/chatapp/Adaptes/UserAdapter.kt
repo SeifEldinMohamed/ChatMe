@@ -20,23 +20,21 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.user_search_item.view.*
 
-class UserAdapter(var mcontext:Context,var mUser:List<user>,var isChatChecked:Boolean)
-    :RecyclerView.Adapter<UserAdapter.ViewHolder>() {
-    var lastMessage : String = ""
+class UserAdapter(var mcontext: Context?, var mUser: List<user>, var isChatChecked: Boolean) :
+    RecyclerView.Adapter<UserAdapter.ViewHolder>() {
+    var lastMessage: String = ""
 
-    class ViewHolder(itemview:View):RecyclerView.ViewHolder(itemview){
+    class ViewHolder(itemview: View) : RecyclerView.ViewHolder(itemview) {
         var username = itemview.txt_username
         var userImage = itemview.image_profile
         var online = itemview.image_online
         var offline = itemview.image_offline
         var lastMessges = itemview.txt_last_message
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.user_search_item,parent,false)
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.user_search_item, parent, false)
         return ViewHolder(v)
-
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -44,29 +42,24 @@ class UserAdapter(var mcontext:Context,var mUser:List<user>,var isChatChecked:Bo
         val user: user = mUser[position]
         holder.username.text = user.username
         // we used place holder to display a default pic until the image came from database
-        Picasso.get().load(user.profile).placeholder(R.drawable.profile_image)
-            .into(holder.userImage)
+        Picasso.get().load(user.profile).placeholder(R.drawable.profile_image).into(holder.userImage)
 
         // for status feature
-        if (isChatChecked){
-            getlastMessage(user.uid,holder.lastMessges)
-        }
-        else{
+        if (isChatChecked) {
+            getlastMessage(user.uid, holder.lastMessges)
+        } else {
             holder.lastMessges.visibility = View.GONE
         }
 
-
-        if (isChatChecked){
-            if (user.status == "online"){
+        if (isChatChecked) {
+            if (user.status == "online") {
                 holder.online.visibility = View.VISIBLE
                 holder.offline.visibility = View.GONE
-            }
-            else{
+            } else {
                 holder.online.visibility = View.GONE
                 holder.offline.visibility = View.VISIBLE
             }
-        }
-        else{
+        } else {
             holder.offline.visibility = View.GONE
             holder.online.visibility = View.GONE
         }
@@ -75,28 +68,28 @@ class UserAdapter(var mcontext:Context,var mUser:List<user>,var isChatChecked:Bo
             // send toUser information to messageChat activity
             val intent = Intent(mcontext, MessageChat::class.java)
             intent.putExtra("touser", user)
-            mcontext.startActivity(intent)
+            mcontext!!.startActivity(intent)
         }
     }
 
     private fun getlastMessage(ChatUserId: String, lastMessges: TextView?) {
-
         lastMessage = "default message"
         val currentUser = FirebaseAuth.getInstance().currentUser
+
         val ref = FirebaseDatabase.getInstance().reference.child("Chats")
-        ref.addValueEventListener(object : ValueEventListener{
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.forEach {
                     val chat = it.getValue(Chat::class.java)
-                    if (currentUser != null && chat != null){
+                    if (currentUser != null && chat != null) {
                         if (chat.sender == ChatUserId && chat.reciever == currentUser.uid
-                            || chat.sender == currentUser.uid && chat.reciever == ChatUserId){
-                             lastMessage = chat.message
+                            || chat.sender == currentUser.uid && chat.reciever == ChatUserId
+                        ) {
+                            lastMessage = chat.message
                         }
-
                     }
                 }
-                when(lastMessage){
+                when (lastMessage) {
                     "default message" -> lastMessges!!.text = "No message yet"
                     "sent you an image." -> lastMessges!!.text = "image sent"
                     else -> lastMessges!!.text = lastMessage
@@ -108,15 +101,9 @@ class UserAdapter(var mcontext:Context,var mUser:List<user>,var isChatChecked:Bo
 
             }
         })
-
-
     }
 
     override fun getItemCount(): Int {
         return mUser.size
     }
-
-
-
-
 }

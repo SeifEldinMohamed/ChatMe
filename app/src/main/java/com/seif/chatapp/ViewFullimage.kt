@@ -6,7 +6,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_view_fullimage.*
 
 class ViewFullimage : AppCompatActivity() {
-    private var imageUrl:String = ""
+    private var imageUrl: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_fullimage)

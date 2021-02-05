@@ -25,21 +25,19 @@ import kotlinx.android.synthetic.main.message_item_left.view.*
 import kotlinx.android.synthetic.main.message_item_left.view.txt_showmessage
 import kotlinx.android.synthetic.main.message_item_right.view.*
 
-class ChatAdapter( mcontext: Context,  mChatList: ArrayList<Chat>,  imageUrl: String) :
+class ChatAdapter(mcontext: Context, mChatList: ArrayList<Chat>, imageUrl: String) :
     RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
-    private val mcontext : Context
+    private val mcontext: Context
     private val mChatList: ArrayList<Chat>
     private val imageUrl: String
+
     init {
-        this.mcontext  = mcontext
+        this.mcontext = mcontext
         this.mChatList = mChatList
         this.imageUrl = imageUrl
     }
 
-
-
     class ViewHolder(itemview: View) : RecyclerView.ViewHolder(itemview) {
-
         var profileimage: CircleImageView? = null
         var showtextmessage: TextView? = null
         var leftimageview: ImageView? = null
@@ -59,14 +57,13 @@ class ChatAdapter( mcontext: Context,  mChatList: ArrayList<Chat>,  imageUrl: St
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (mChatList[position].sender == currentUser!!.uid) {
             return 0
-        } else {
+        }
+        else {
             return 1
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-
         if (viewType == 0) {
             val v = LayoutInflater.from(mcontext)
                 .inflate(R.layout.message_item_right, parent, false)
@@ -79,43 +76,42 @@ class ChatAdapter( mcontext: Context,  mChatList: ArrayList<Chat>,  imageUrl: St
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val chat : Chat = mChatList[position]
+        val chat: Chat = mChatList[position]
         val currentUser = FirebaseAuth.getInstance().currentUser
 
         Picasso.get().load(imageUrl).into(holder.profileimage)
-        Log.d("test",chat.message+"\n")
+        Log.d("test", chat.message + "\n")
         // image messages
         if (chat.message == "sent you an image." && chat.url != "") {
             // image message - right side
             if (chat.sender == currentUser!!.uid) {
-                // holder.showtextmessage!!.text = ""
-                // holder.showtextmessage!!.setBackgroundColor(Color.parseColor("#e6e6e6"))
                 holder.showtextmessage!!.visibility = View.GONE
                 holder.Righttimageview!!.visibility = View.VISIBLE
                 Picasso.get().load(chat.url).into(holder.Righttimageview)
-
+                // when user click on image
                 holder.Righttimageview!!.setOnClickListener {
                     val options = arrayOf(
                         "View full image",
                         "Delete Image",
                         "Cancel"
                     )
-                    val builder = AlertDialog.Builder(holder.itemView.context,R.style.Theme_AppCompat_DayNight_Dialog_Alert)
+                    val builder = AlertDialog.Builder(
+                        holder.itemView.context,
+                        R.style.Theme_AppCompat_DayNight_Dialog_Alert
+                    )
                     builder.setTitle("What do you want?")
-                    builder.setItems(options, DialogInterface.OnClickListener{
-                        dialog, which ->
-                        if (which == 0){
-                            val intent = Intent(mcontext,ViewFullimage::class.java)
+                    builder.setItems(options, DialogInterface.OnClickListener { dialog, which ->
+                        if (which == 0) {
+                            val intent = Intent(mcontext, ViewFullimage::class.java)
                             intent.putExtra("url", chat.url)
                             mcontext.startActivity(intent)
                         }
-                        else if (which == 1){
+                        else if (which == 1) {
                             deleteSendMessage(position, holder)
                         }
                     })
                     builder.show()
                 }
-
             }
             // image message - left side
             else if (chat.sender != currentUser.uid) {
@@ -130,10 +126,9 @@ class ChatAdapter( mcontext: Context,  mChatList: ArrayList<Chat>,  imageUrl: St
                     )
                     val builder = AlertDialog.Builder(holder.itemView.context)
                     builder.setTitle("What do you want?")
-                    builder.setItems(options, DialogInterface.OnClickListener{
-                            dialog, which ->
-                        if (which == 0){
-                            val intent = Intent(mcontext,ViewFullimage::class.java)
+                    builder.setItems(options, DialogInterface.OnClickListener { dialog, which ->
+                        if (which == 0) {
+                            val intent = Intent(mcontext, ViewFullimage::class.java)
                             intent.putExtra("url", chat.url)
                             mcontext.startActivity(intent)
                         }
@@ -147,7 +142,7 @@ class ChatAdapter( mcontext: Context,  mChatList: ArrayList<Chat>,  imageUrl: St
         else {
             holder.showtextmessage!!.text = chat.message
 
-            if (currentUser!!.uid == chat.sender){
+            if (currentUser!!.uid == chat.sender) {
                 holder.showtextmessage!!.setOnClickListener {
                     val options = arrayOf(
                         "Delete Message",
@@ -155,9 +150,8 @@ class ChatAdapter( mcontext: Context,  mChatList: ArrayList<Chat>,  imageUrl: St
                     )
                     val builder = AlertDialog.Builder(holder.itemView.context)
                     builder.setTitle("What do you want?")
-                    builder.setItems(options, DialogInterface.OnClickListener{
-                            dialog, which ->
-                        if (which == 0){
+                    builder.setItems(options, DialogInterface.OnClickListener { dialog, which ->
+                        if (which == 0) {
                             deleteSendMessage(position, holder)
                         }
                     })
@@ -181,15 +175,17 @@ class ChatAdapter( mcontext: Context,  mChatList: ArrayList<Chat>,  imageUrl: St
     override fun getItemCount(): Int {
         return mChatList.size
     }
-    private fun deleteSendMessage(position: Int, holder: ViewHolder){
+
+    private fun deleteSendMessage(position: Int, holder: ViewHolder) {
         val ref = FirebaseDatabase.getInstance().reference.child("Chats")
             .child(mChatList[position].message).removeValue()
             .addOnSuccessListener {
-                Toast.makeText(holder.itemView.context,"Deleted",Toast.LENGTH_SHORT).show()
+                Toast.makeText(holder.itemView.context, "Deleted", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
-                Toast.makeText(holder.itemView.context,"Not deleted bec : ${it.message}"
-                    ,Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    holder.itemView.context, "Not deleted bec : ${it.message}", Toast.LENGTH_SHORT
+                ).show()
             }
     }
 

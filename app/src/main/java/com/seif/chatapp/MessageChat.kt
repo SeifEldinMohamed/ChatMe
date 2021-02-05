@@ -26,16 +26,16 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class MessageChat : AppCompatActivity() {
-    var currentUser : FirebaseUser? = null
+    var currentUser: FirebaseUser? = null
     private val RequestCode = 400
-    var toUser :user? = null
-    var chatsAdapter : ChatAdapter? = null
-    var mchatList : ArrayList<Chat>? = null
-    var ref : DatabaseReference? = null
+    var toUser: user? = null
+    var chatsAdapter: ChatAdapter? = null
+    var mchatList: ArrayList<Chat>? = null
+    var ref: DatabaseReference? = null
     var notify = false
-    var apiService : ApiService? = null
-    lateinit var recycler_view_chats:RecyclerView
-    var userid : String? = ""
+    var apiService: ApiService? = null
+    lateinit var recycler_view_chats: RecyclerView
+    var userid: String? = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,20 +52,21 @@ class MessageChat : AppCompatActivity() {
 
         // visit talking user profile
         username_chatMessage.setOnClickListener {
-            val intet = Intent(this,VisitUserProfile::class.java)
-            intet.putExtra("visituser",toUser)
+            val intet = Intent(this, VisitUserProfile::class.java)
+            intet.putExtra("visituser", toUser)
             startActivity(intet)
         }
         // visit talking user profile Image
-        user_profileImage_chatMessage.setOnClickListener{
-            val intet = Intent(this,ViewFullimage::class.java)
+        user_profileImage_chatMessage.setOnClickListener {
+            val intet = Intent(this, ViewFullimage::class.java)
             intet.putExtra("username", toUser!!.username)
             intet.putExtra("url", toUser!!.profile)
             startActivity(intet)
         }
 
         // put api of the fcm notification
-        apiService = Client.Client.getClient("https://fcm.googleapis.com/")!!.create(ApiService::class.java)
+        apiService =
+            Client.Client.getClient("https://fcm.googleapis.com/")!!.create(ApiService::class.java)
 
         recycler_view_chats = findViewById(R.id.recycler_view_chats)
         recycler_view_chats.setHasFixedSize(true)
@@ -74,13 +75,13 @@ class MessageChat : AppCompatActivity() {
         recycler_view_chats.layoutManager = linearLayoutManager
 
         // if the toUser is null so we entered from notification and have to use userid from MyFirebaseMessaging
-        if (toUser == null){
-             userid = intent.getStringExtra("userid")
+        if (toUser == null) {
+            userid = intent.getStringExtra("userid")
             ref = FirebaseDatabase.getInstance().reference.child("users").child(userid!!)
-            ref!!.addValueEventListener(object : ValueEventListener{
+            ref!!.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()){
-                        val user : user? = snapshot.getValue(user::class.java)
+                    if (snapshot.exists()) {
+                        val user: user? = snapshot.getValue(user::class.java)
                         // show user informaion in toolbar of chat Activity
                         username_chatMessage.text = user!!.username
                         Picasso.get().load(user.profile).into(user_profileImage_chatMessage)
@@ -88,23 +89,24 @@ class MessageChat : AppCompatActivity() {
 
                     }
                 }
+
                 override fun onCancelled(error: DatabaseError) {
 
                 }
             })
-        }
-        else{ // use the toUser as we entered from mainActivity normally
+        } else { // use the toUser as we entered from mainActivity normally
             ref = FirebaseDatabase.getInstance().reference.child("users").child(toUser!!.uid)
-            ref!!.addValueEventListener(object : ValueEventListener{
+            ref!!.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()){
-                        val user : user? = snapshot.getValue(user::class.java)
+                    if (snapshot.exists()) {
+                        val user: user? = snapshot.getValue(user::class.java)
                         // show user informaion in toolbar of chat Activity
                         username_chatMessage.text = user!!.username
                         Picasso.get().load(user.profile).into(user_profileImage_chatMessage)
                         retrieveData(currentUser!!.uid, toUser!!.uid, user!!.profile)
                     }
                 }
+
                 override fun onCancelled(error: DatabaseError) {
 
                 }
@@ -114,14 +116,13 @@ class MessageChat : AppCompatActivity() {
         btn_sendMessage.setOnClickListener {
             notify = true
             val message = edit_chatMessage.text.toString().trim()
-            if (message == ""){
-                Toast.makeText(this,"write something first!",Toast.LENGTH_SHORT).show()
-            }
-            else{
-                if (toUser==null){
+            if (message == "") {
+                Toast.makeText(this, "write something first!", Toast.LENGTH_SHORT).show()
+            } else {
+                if (toUser == null) {
                     sendMessageToUser(currentUser!!.uid, userid!!, message)
 
-                }else{
+                } else {
                     sendMessageToUser(currentUser!!.uid, toUser!!.uid, message)
                 }
             }
@@ -132,13 +133,12 @@ class MessageChat : AppCompatActivity() {
             notify = true
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
-            startActivityForResult(Intent.createChooser(intent,"pick image"),RequestCode)
+            startActivityForResult(Intent.createChooser(intent, "pick image"), RequestCode)
         }
 
         if (toUser == null) {
             seenMessage((userid!!))
-        }
-        else{
+        } else {
             seenMessage(toUser!!.uid)
         }
 
@@ -147,26 +147,27 @@ class MessageChat : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RequestCode && resultCode == Activity.RESULT_OK && data != null) {
-            val progressbar = ProgressDialog(this,R.style.Theme_AppCompat_DayNight_Dialog_Alert)
+            val progressbar = ProgressDialog(this, R.style.Theme_AppCompat_DayNight_Dialog_Alert)
             progressbar.setMessage("please wait, image is sending...")
             val imageUrl = data.data
             val storageRefrence = FirebaseStorage.getInstance().reference.child("Chat Images")
             val ref = FirebaseDatabase.getInstance().reference
             val messageId = ref.push().key
-            val filepath =  storageRefrence.child("$messageId.jpg")
+            val filepath = storageRefrence.child("$messageId.jpg")
             progressbar.show()
             filepath.putFile(imageUrl!!).addOnSuccessListener {
-                Toast.makeText(this,
+                Toast.makeText(
+                    this,
                     "Successfully send image to storage $it",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
                 filepath.downloadUrl.addOnSuccessListener {
 
                     val mapSendMessage = HashMap<String, Any>()
                     mapSendMessage["sender"] = currentUser!!.uid
-                    if (toUser == null){
+                    if (toUser == null) {
                         mapSendMessage["reciever"] = userid!!
-                    }
-                    else{
+                    } else {
                         mapSendMessage["reciever"] = toUser!!.uid
 
                     }
@@ -180,15 +181,22 @@ class MessageChat : AppCompatActivity() {
                             progressbar.dismiss()
                             val refrence = FirebaseDatabase.getInstance().reference
                                 .child("users").child(currentUser!!.uid)
-                            refrence.addValueEventListener(object : ValueEventListener{
+                            refrence.addValueEventListener(object : ValueEventListener {
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     val user = snapshot.getValue(user::class.java)
-                                    if(notify){
-                                        if (toUser == null){
-                                            sendNotification(userid!!, user!!.username, "sent you an image.")
-                                        }
-                                        else{
-                                            sendNotification(toUser!!.uid, user!!.username, "sent you an image.")
+                                    if (notify) {
+                                        if (toUser == null) {
+                                            sendNotification(
+                                                userid!!,
+                                                user!!.username,
+                                                "sent you an image."
+                                            )
+                                        } else {
+                                            sendNotification(
+                                                toUser!!.uid,
+                                                user!!.username,
+                                                "sent you an image."
+                                            )
 
                                         }
                                     }
@@ -212,91 +220,91 @@ class MessageChat : AppCompatActivity() {
             }
         }
     }
-        fun sendMessageToUser(senderId: String, recieverId: String, message: String) {
-            val refrence = FirebaseDatabase.getInstance().reference
-            val messagekey = refrence.push().key.toString()
-            val messagemap = HashMap<String, Any>()
-            messagemap["sender"] = senderId
-            messagemap["reciever"] = recieverId
-            messagemap["message"] = message
-            messagemap["isseen"] = "false"
-            messagemap["url"] = ""
-            messagemap["messageId"] = messagekey
-            Log.d("not","f")
-            var chatListRefrence = FirebaseDatabase.getInstance().reference
-            refrence.child("Chats").child(messagekey).setValue(messagemap)
-                .addOnSuccessListener {
-                    if (toUser == null) {
-                         chatListRefrence = FirebaseDatabase.getInstance().reference
-                            .child("chatList").child(currentUser!!.uid)
-                            .child(userid!!)
-                    }
-                    else{
-                        chatListRefrence = FirebaseDatabase.getInstance().reference
-                            .child("chatList").child(currentUser!!.uid)
-                            .child(toUser!!.uid)
-                    }
 
-                        chatListRefrence.addValueEventListener(object : ValueEventListener{
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                if (!snapshot.exists()){
-                                    if (toUser == null) {
-                                        chatListRefrence.child("id").setValue(userid)
-                                    }
-                                    else{
-                                        chatListRefrence.child("id").setValue(toUser!!.uid)
+    fun sendMessageToUser(senderId: String, recieverId: String, message: String) {
+        val refrence = FirebaseDatabase.getInstance().reference
+        val messagekey = refrence.push().key.toString()
+        val messagemap = HashMap<String, Any>()
+        messagemap["sender"] = senderId
+        messagemap["reciever"] = recieverId
+        messagemap["message"] = message
+        messagemap["isseen"] = "false"
+        messagemap["url"] = ""
+        messagemap["messageId"] = messagekey
+        Log.d("not", "f")
+        var chatListRefrence = FirebaseDatabase.getInstance().reference
+        refrence.child("Chats").child(messagekey).setValue(messagemap)
+            .addOnSuccessListener {
+                if (toUser == null) {
+                    chatListRefrence = FirebaseDatabase.getInstance().reference
+                        .child("chatList").child(currentUser!!.uid)
+                        .child(userid!!)
+                } else {
+                    chatListRefrence = FirebaseDatabase.getInstance().reference
+                        .child("chatList").child(currentUser!!.uid)
+                        .child(toUser!!.uid)
+                }
 
-                                    }
-                                }
-                                var chatListRecieverRef = FirebaseDatabase.getInstance().reference
-                                // for the reciever user
-                                if (toUser == null) {
-                                    chatListRecieverRef = FirebaseDatabase.getInstance().reference
-                                        .child("chatList").child(userid!!)
-                                        .child(currentUser!!.uid)
-                                    chatListRecieverRef.child("id").setValue(currentUser!!.uid)
-
-                                }
-                                else{
-                                    chatListRecieverRef = FirebaseDatabase.getInstance().reference
-                                        .child("chatList").child(toUser!!.uid)
-                                        .child(currentUser!!.uid)
-                                    chatListRecieverRef.child("id").setValue(currentUser!!.uid)
-
-                                }
+                chatListRefrence.addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (!snapshot.exists()) {
+                            if (toUser == null) {
+                                chatListRefrence.child("id").setValue(userid)
+                            } else {
+                                chatListRefrence.child("id").setValue(toUser!!.uid)
 
                             }
-                            override fun onCancelled(error: DatabaseError) {
+                        }
+                        var chatListRecieverRef = FirebaseDatabase.getInstance().reference
+                        // for the reciever user
+                        if (toUser == null) {
+                            chatListRecieverRef = FirebaseDatabase.getInstance().reference
+                                .child("chatList").child(userid!!)
+                                .child(currentUser!!.uid)
+                            chatListRecieverRef.child("id").setValue(currentUser!!.uid)
 
-                            }
-                        })
+                        } else {
+                            chatListRecieverRef = FirebaseDatabase.getInstance().reference
+                                .child("chatList").child(toUser!!.uid)
+                                .child(currentUser!!.uid)
+                            chatListRecieverRef.child("id").setValue(currentUser!!.uid)
 
-                }
+                        }
 
-            // implement the push notification using fcm
-            val userrefrence = FirebaseDatabase.getInstance().reference
-                .child("users").child(currentUser!!.uid)
-            userrefrence.addValueEventListener(object : ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val user = snapshot.getValue(user::class.java)
-                    if(notify){
-                        sendNotification(recieverId, user!!.username, message)
                     }
-                    notify = false
-                }
 
-                override fun onCancelled(error: DatabaseError) {
+                    override fun onCancelled(error: DatabaseError) {
 
+                    }
+                })
+
+            }
+
+        // implement the push notification using fcm
+        val userrefrence = FirebaseDatabase.getInstance().reference
+            .child("users").child(currentUser!!.uid)
+        userrefrence.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val user = snapshot.getValue(user::class.java)
+                if (notify) {
+                    sendNotification(recieverId, user!!.username, message)
                 }
-            })
-        }
-    private fun sendNotification(recieverId: String,username: String, message: String){
+                notify = false
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+    }
+
+    private fun sendNotification(recieverId: String, username: String, message: String) {
         val ref = FirebaseDatabase.getInstance().getReference().child("Tokens")
         val query = ref.orderByKey().equalTo(recieverId)
-        query.addValueEventListener(object : ValueEventListener{
+        query.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.forEach {
-                    val token : Token? = it.getValue(Token::class.java)
+                    val token: Token? = it.getValue(Token::class.java)
                     if (toUser == null) {
                         val data = Data(
                             currentUser!!.uid,
@@ -306,23 +314,28 @@ class MessageChat : AppCompatActivity() {
                             userid!!
                         )
                         val sender = Sender(data!!, token!!.getToken().toString())
-                        apiService!!.sendNotification(sender).enqueue(object : Callback<MyResponse>{
-                            override fun onResponse(
-                                call: Call<MyResponse>,
-                                response: Response<MyResponse>
-                            ) {
-                                if (response.code() == 200){
-                                    if (response.body()!!.success != 1){
-                                        Toast.makeText(this@MessageChat,"Failed, Nothing happend",Toast.LENGTH_LONG).show()
+                        apiService!!.sendNotification(sender)
+                            .enqueue(object : Callback<MyResponse> {
+                                override fun onResponse(
+                                    call: Call<MyResponse>,
+                                    response: Response<MyResponse>
+                                ) {
+                                    if (response.code() == 200) {
+                                        if (response.body()!!.success != 1) {
+                                            Toast.makeText(
+                                                this@MessageChat,
+                                                "Failed, Nothing happend",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
                                 }
-                            }
-                            override fun onFailure(call: Call<MyResponse>, t: Throwable) {
 
-                            }
-                        })
-                    }
-                    else{
+                                override fun onFailure(call: Call<MyResponse>, t: Throwable) {
+
+                                }
+                            })
+                    } else {
                         val data = Data(
                             currentUser!!.uid,
                             R.mipmap.ic_launcher,
@@ -331,40 +344,49 @@ class MessageChat : AppCompatActivity() {
                             toUser!!.uid
                         )
                         val sender = Sender(data!!, token!!.getToken().toString())
-                        apiService!!.sendNotification(sender).enqueue(object : Callback<MyResponse>{
-                            override fun onResponse(
-                                call: Call<MyResponse>,
-                                response: Response<MyResponse>
-                            ) {
-                                if (response.code() == 200){
-                                    if (response.body()!!.success != 1){
-                                        Toast.makeText(this@MessageChat,"Failed, Nothing happend",Toast.LENGTH_LONG).show()
+                        apiService!!.sendNotification(sender)
+                            .enqueue(object : Callback<MyResponse> {
+                                override fun onResponse(
+                                    call: Call<MyResponse>,
+                                    response: Response<MyResponse>
+                                ) {
+                                    if (response.code() == 200) {
+                                        if (response.body()!!.success != 1) {
+                                            Toast.makeText(
+                                                this@MessageChat,
+                                                "Failed, Nothing happend",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
                                 }
-                            }
-                            override fun onFailure(call: Call<MyResponse>, t: Throwable) {
 
-                            }
-                        })
+                                override fun onFailure(call: Call<MyResponse>, t: Throwable) {
+
+                                }
+                            })
                     }
 
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
             }
         })
 
     }
+
     private fun retrieveData(senderId: String, recieverId: String, RecieverImgUrl: String) {
         mchatList = ArrayList()
         val ref = FirebaseDatabase.getInstance().reference.child("Chats")
-        ref.addValueEventListener(object : ValueEventListener{
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 mchatList!!.clear()
                 snapshot.children.forEach {
                     val chat = it.getValue(Chat::class.java)
                     if (chat!!.reciever == senderId && chat!!.sender == recieverId
-                        || chat!!.reciever == recieverId && chat!!.sender == senderId){
+                        || chat!!.reciever == recieverId && chat!!.sender == senderId
+                    ) {
                         mchatList!!.add(chat)
                     }
                     chatsAdapter = ChatAdapter(this@MessageChat, mchatList!!, RecieverImgUrl)
@@ -372,6 +394,7 @@ class MessageChat : AppCompatActivity() {
 
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
             }
 
@@ -379,31 +402,46 @@ class MessageChat : AppCompatActivity() {
 
     }
 
-    var seenListener : ValueEventListener? = null
-    private fun seenMessage(userId : String){
+    var seenListener: ValueEventListener? = null
+    private fun seenMessage(userId: String) {
         val ref = FirebaseDatabase.getInstance().reference.child("Chats")
 
-        seenListener = ref.addValueEventListener(object : ValueEventListener{
+        seenListener = ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.forEach {
                     val chat = it.getValue(Chat::class.java)
-                    if (chat!!.reciever == currentUser!!.uid && chat!!.sender == userId ){
-                        val hashmap = HashMap<String,Any>()
+                    if (chat!!.reciever == currentUser!!.uid && chat!!.sender == userId) {
+                        val hashmap = HashMap<String, Any>()
                         hashmap["isseen"] = "true"
                         it.ref.updateChildren(hashmap)
                     }
 
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
 
             }
         })
     }
 
+    override fun onStart() {
+        super.onStart()
+        updateStatus("online")
+    }
+
     override fun onPause() {
         super.onPause()
         // to update user status as offline
         ref!!.removeEventListener(seenListener!!)
+        updateStatus("offline")
+
     }
+
+    private fun updateStatus(status: String) {
+        val ref = FirebaseDatabase.getInstance().reference.child("users").child(currentUser!!.uid)
+        val hashmap = HashMap<String, Any>()
+        hashmap["status"] = status
+        ref.updateChildren(hashmap)
     }
+}

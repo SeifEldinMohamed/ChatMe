@@ -8,7 +8,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="1dp"
         android:background="#fff"
         android:padding="2dp"
@@ -22,8 +22,8 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_marginStart="2dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             android:src="@drawable/ic_profile"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

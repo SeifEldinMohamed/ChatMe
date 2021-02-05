@@ -22,7 +22,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
-    var currentuser : FirebaseUser? = null
+    var currentuser: FirebaseUser? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -65,8 +65,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 if (countUnreadMessages == 0) {
                     viewPagerAdapter.addFragment(ChatsFragment(), "Chats")
-                }
-                else {
+                } else {
                     viewPagerAdapter.addFragment(ChatsFragment(), "Chats ($countUnreadMessages)")
                 }
                 viewPagerAdapter.addFragment(SearchFragment(), "Search")
@@ -75,11 +74,13 @@ class MainActivity : AppCompatActivity() {
                 tabLayout.setupWithViewPager(viewPager)
 
             }
+
             override fun onCancelled(error: DatabaseError) {
 
             }
         })
     }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -98,7 +99,8 @@ class MainActivity : AppCompatActivity() {
         }
         return false
     }
-    private fun updateStatus(status : String){
+
+    private fun updateStatus(status: String) {
         val ref = FirebaseDatabase.getInstance().reference.child("users").child(currentuser!!.uid)
         val hashmap = HashMap<String, Any>()
         hashmap["status"] = status
@@ -113,5 +115,8 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         updateStatus("offline")
+
     }
+
+
 }

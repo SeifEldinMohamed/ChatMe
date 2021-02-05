@@ -12,8 +12,8 @@ import kotlinx.android.synthetic.main.activity_message_chat.*
 import kotlinx.android.synthetic.main.activity_visit_user_profile.*
 
 class VisitUserProfile : AppCompatActivity() {
-    private var visituser : user? =null
-    var ref : DatabaseReference? = null
+    private var visituser: user? = null
+    var ref: DatabaseReference? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_visit_user_profile)
@@ -29,13 +29,14 @@ class VisitUserProfile : AppCompatActivity() {
         ref = FirebaseDatabase.getInstance().reference.child("users").child(currentUser!!.uid)
         ref!!.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()){
-                    val user : user? = snapshot.getValue(user::class.java)
+                if (snapshot.exists()) {
+                    val user: user? = snapshot.getValue(user::class.java)
                     // show MainUser informaion in toolbar of visitProfile Activity
                     Picasso.get().load(user!!.profile).into(user_profileImage_visit)
                     user_name_visit.text = user.username
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
 
             }
@@ -43,22 +44,22 @@ class VisitUserProfile : AppCompatActivity() {
 
         btn_SendMessage.setOnClickListener {
             val intent = Intent(this, MessageChat::class.java)
-            intent.putExtra("touser",visituser)
+            intent.putExtra("touser", visituser)
             startActivity(intent)
         }
         set_facebook_visit.setOnClickListener {
             val uri = Uri.parse(visituser!!.face)
-            val intent = Intent(Intent.ACTION_VIEW,uri)
+            val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
         }
         set_insta_visit.setOnClickListener {
             val uri = Uri.parse(visituser!!.insta)
-            val intent = Intent(Intent.ACTION_VIEW,uri)
+            val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
         }
         set_website_visit.setOnClickListener {
             val uri = Uri.parse(visituser!!.website)
-            val intent = Intent(Intent.ACTION_VIEW,uri)
+            val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
         }
         set_profile_image_visit.setOnClickListener {

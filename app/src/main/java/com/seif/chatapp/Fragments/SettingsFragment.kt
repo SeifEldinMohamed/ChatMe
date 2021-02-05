@@ -3,6 +3,7 @@ package com.seif.chatapp.Fragments
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
@@ -52,7 +53,6 @@ class SettingsFragment : Fragment() {
         storageRef = FirebaseStorage.getInstance().reference.child("User Images")
         currentUser = FirebaseAuth.getInstance().currentUser
 
-
         val userId = FirebaseAuth.getInstance().currentUser!!.uid
         val ref = FirebaseDatabase.getInstance().reference.child("users").child(userId)
         ref.addValueEventListener(object : ValueEventListener {
@@ -61,10 +61,11 @@ class SettingsFragment : Fragment() {
                     val myUser = snapshot.getValue(user::class.java)
                     if (txt_username_settings == null) return
                     txt_username_settings.text = myUser!!.username
-                    Picasso.get().load(myUser!!.profile).into(set_profile_image)
+                    Picasso.get().load(myUser.profile).into(set_profile_image)
                     Picasso.get().load(myUser.cover).into(set_cover_image)
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
 
             }
@@ -86,7 +87,7 @@ class SettingsFragment : Fragment() {
             setSocialLinks()
         }
         view.set_website.setOnClickListener {
-            socialChecker  = "website"
+            socialChecker = "website"
             setSocialLinks()
         }
 
@@ -94,54 +95,51 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setSocialLinks() {
-        val builder = AlertDialog.Builder(context,R.style.Theme_AppCompat_DayNight_Dialog_Alert)
+        val builder = AlertDialog.Builder(context, R.style.Theme_AppCompat_DayNight_Dialog_Alert)
         val inflater = layoutInflater
-        val dialoglayout = inflater.inflate(R.layout.edittext_alertdialog,null)
+        val dialoglayout = inflater.inflate(R.layout.edittext_alertdialog, null)
         val editText = dialoglayout.findViewById<EditText>(R.id.editText)
-        if (socialChecker == "website"){
+        if (socialChecker == "website") {
             builder.setTitle("write Url:")
-                editText.hint = "e.g https://www.google.com"
-        }
-        else if(socialChecker == "facebook" ){
+            editText.hint = "e.g https://www.google.com"
+        } else if (socialChecker == "facebook") {
             builder.setTitle("write Url:")
             editText.hint = "e.g https://www.facebook.com"
 
-        }
-        else{
-         builder.setTitle("write username:")
+        } else {
+            builder.setTitle("write username:")
             editText.hint = "e.g seifmohamed_11"
         }
         builder.setView(dialoglayout)
-        builder.setPositiveButton("Create",DialogInterface.OnClickListener { dialog, which ->
+        builder.setPositiveButton("Create", DialogInterface.OnClickListener { dialog, which ->
             val str = editText.text.toString()
-            if (str.isEmpty()){
-                Toast.makeText(context,"please write something....",Toast.LENGTH_SHORT).show()
-            }
-            else{
+            if (str.isEmpty()) {
+                Toast.makeText(context, "please write something....", Toast.LENGTH_SHORT).show()
+            } else {
                 saveSocialLink(str)
             }
         })
-        builder.setNegativeButton("Cancel",DialogInterface.OnClickListener { dialog, which ->
+        builder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which ->
             dialog.cancel()
         })
         builder.show()
     }
 
-    private fun saveSocialLink(str:String) {
-            val mapSocial = HashMap<String,Any>()
-        when(socialChecker){
+    private fun saveSocialLink(str: String) {
+        val mapSocial = HashMap<String, Any>()
+        when (socialChecker) {
             "facebook" -> mapSocial["face"] = str
             "insta" -> mapSocial["insta"] = "https://www.instagram.com/$str/"
             "website" -> mapSocial["website"] = str
         }
         val refrence = FirebaseDatabase.getInstance().reference.child("users")
             .child(currentUser!!.uid)
-            refrence.updateChildren(mapSocial).addOnSuccessListener {
-                Toast.makeText(context,"Updated Successfully",Toast.LENGTH_SHORT).show()
-            }.addOnFailureListener{
-                    Toast.makeText(context,"Error : ${it.message}",Toast.LENGTH_SHORT).show()
+        refrence.updateChildren(mapSocial).addOnSuccessListener {
+            Toast.makeText(context, "Updated Successfully", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener {
+            Toast.makeText(context, "Error : ${it.message}", Toast.LENGTH_SHORT).show()
 
-                }
+        }
     }
 
     private fun openPhotoSelector() {
@@ -150,7 +148,7 @@ class SettingsFragment : Fragment() {
         startActivityForResult(intent, RequestCode)
     }
 
-    var selectedPhotoUri: Uri? = null
+    private var selectedPhotoUri: Uri? = null
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RequestCode && resultCode == Activity.RESULT_OK && data != null) {
@@ -173,45 +171,50 @@ class SettingsFragment : Fragment() {
 
             ref.putFile(selectedPhotoUri!!)
                 .addOnSuccessListener {
-                    Toast.makeText(
-                        context,
-                        "Successfully uploading image to storage ${it.metadata!!.path}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Log.d(
+                        "Settings", "Successfully uploading image to storage ${it.metadata!!.path}"
+                    )
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("re", "file location : $it")
                         if (coverChecker == "cover") {
-                            var mapcoverimage = HashMap<String, Any>()
+                            val mapcoverimage = HashMap<String, Any>()
                             mapcoverimage["cover"] = it.toString()
-                            var refrence = FirebaseDatabase.getInstance().reference.child("users")
+                            val refrence = FirebaseDatabase.getInstance().reference.child("users")
                                 .child(currentUser!!.uid)
                             refrence.updateChildren(mapcoverimage)
                             coverChecker = ""
 
                         } else {
-                            var mapprofileimage = HashMap<String, Any>()
+                            val mapprofileimage = HashMap<String, Any>()
                             mapprofileimage["profile"] = it.toString()
-                            var refrence = FirebaseDatabase.getInstance().reference.child("users")
+                            val refrence = FirebaseDatabase.getInstance().reference.child("users")
                                 .child(currentUser!!.uid)
                             refrence.updateChildren(mapprofileimage)
                             coverChecker = ""
-
                         }
                         progressbar.dismiss()
 
                     }.addOnFailureListener {
                         Log.d("re", "Error in file location of photo: $it")
                     }
-
                 }.addOnFailureListener {
                     Toast.makeText(context, "Error in uploading image: $it", Toast.LENGTH_LONG)
                         .show()
                 }
-
-
         }
+    }
+    private fun updateStatus(status : String){
+        val currentser = FirebaseAuth.getInstance().currentUser
+        val ref = FirebaseDatabase.getInstance().reference.child("users").child(currentser!!.uid)
+        val hashmap = HashMap<String, Any>()
+        hashmap["status"] = status
+        ref.updateChildren(hashmap)
+    }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        updateStatus("online")
 
     }
 

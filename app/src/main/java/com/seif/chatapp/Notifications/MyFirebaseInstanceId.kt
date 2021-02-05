@@ -14,7 +14,7 @@ class MyFirebaseInstanceId : FirebaseMessagingService() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val refreachToken = FirebaseInstanceId.getInstance().token
 
-        if (currentUser!= null){
+        if (currentUser != null) {
             updateToken(refreachToken)
         }
     }

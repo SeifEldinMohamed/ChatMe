@@ -10,9 +10,11 @@ class Welcome : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_welcome)
+
         btn_welcome_Register.setOnClickListener {
             val intent = Intent(this, Register::class.java)
             startActivity(intent)
+            finish()
         }
         btn_welcome_login.setOnClickListener {
             val intent = Intent(this, Login::class.java)
