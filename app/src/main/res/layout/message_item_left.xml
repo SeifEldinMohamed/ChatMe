@@ -39,6 +39,7 @@
             android:text="TextView"
             android:textColor="#000"
             android:textSize="18sp"
+            android:maxWidth="260dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
